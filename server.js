@@ -193,6 +193,24 @@ app.get("/animais", async (req, res) => {
   }
 });
 
+app.get("/animais/:id", async (req, res) => {
+  try {
+    const { id } = req.params; // Pega o ID da URL
+    const db = conectarBD();
+
+    const resultado = await db.query("SELECT * FROM Animais WHERE id = $1", [id]);
+
+    if (resultado.rows.length === 0) {
+      return res.status(404).json({ erro: "Animal não encontrado" });
+    }
+
+    res.status(200).json(resultado.rows[0]); // Retorna o animal encontrado
+  } catch (e) {
+    console.error("Erro ao buscar animal:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
 app.post("/animais", async (req, res) => {
   try {
     const { Nome, Tipo } = req.body;
