@@ -180,6 +180,79 @@ app.put("/questoes/:id", async (req, res) => {
   }
 });
 
+//ANIMAIS
+
+app.get("/animais", async (req, res) => {
+  try {
+    const db = conectarBD();
+    const resultado = await db.query("SELECT * FROM Animais");
+    res.status(200).json(resultado.rows);
+  } catch (e) {
+    console.error("Erro ao listar animais:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.post("/animais", async (req, res) => {
+  try {
+    const { Nome, Tipo } = req.body;
+
+    if (!Nome || !Tipo) {
+      return res.status(400).json({
+        erro: "Campos obrigatórios não preenchidos",
+        mensagem: "Informe Nome e Tipo do animal.",
+      });
+    }
+
+    const db = conectarBD();
+    const consulta = "INSERT INTO Animais (Nome, Tipo) VALUES ($1, $2)";
+    await db.query(consulta, [Nome, Tipo]);
+
+    res.status(201).json({ mensagem: "Animal cadastrado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao inserir animal:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.put("/animais/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { Nome, Tipo } = req.body;
+
+    const db = conectarBD();
+    const consulta = "UPDATE Animais SET Nome = $1, Tipo = $2 WHERE id = $3";
+    const resultado = await db.query(consulta, [Nome, Tipo, id]);
+
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ erro: "Animal não encontrado" });
+    }
+
+    res.json({ mensagem: "Animal atualizado com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao atualizar animal:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
+app.delete("/animais/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const db = conectarBD();
+    const resultado = await db.query("DELETE FROM Animais WHERE id = $1", [id]);
+
+    if (resultado.rowCount === 0) {
+      return res.status(404).json({ erro: "Animal não encontrado" });
+    }
+
+    res.json({ mensagem: "Animal removido com sucesso!" });
+  } catch (e) {
+    console.error("Erro ao remover animal:", e);
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+});
+
 app.listen(port, () => {            // Um socket para "escutar" as requisições
   console.log(`Serviço rodando na porta:  ${port}`);
 });
